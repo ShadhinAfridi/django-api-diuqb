@@ -26,60 +26,6 @@ class UsersListCreateView(generics.ListCreateAPIView):
     queryset = models.Users.objects.all()
     serializer_class = serializers.UsersSerializer
     pagination_class = pagination.CustomPageNumberPagination
-    
-
-    def fetch_and_store_firebase_users(self):
-        # Fetch Firebase users
-        page = auth.list_users()
-        while page:
-            for user_record in page.users:
-                # Extract user data from Firebase
-                uid = user_record.uid
-
-                api_url = 'https://qb.techerax.com/users/about/{}'.format(uid)
-                response = requests.get(api_url)
-
-                if response.status_code == 200:
-                    user_data = response.json().get('data', {})
-                    about = user_data.get('about')
-                    department_name = user_data.get('department')
-                    department_instance = models.Departments.objects.filter(name=department_name).first()
-                    bitmap_string = user_data.get('image')
-
-                    image = None
-
-                    if not department_instance:
-                      department_instance = None
-
-                    if bitmap_string:
-                        image_data = base64.b64decode(bitmap_string)
-                        image = ContentFile(image_data, name="{}.png".format(uid))
-                    
-                    user_data = {
-                        'department': department_instance,
-                        'about': about,
-                        'image': image,
-                    }
-                    
-                    user_instance, created = models.Users.objects.get_or_create(defaults=user_data, **{'uid': uid})
-
-                    # Print status
-                    if created:
-                        print(f'User {uid} created')
-                    else:
-                        print(f'User {uid} updated')
-
-                else:
-                    print(f'Error fetching data for user {uid}. Status code: {response.status_code}')
-            # Get next batch of users
-            page = page.get_next_page()
-
-    def perform_create(self, serializer):
-        # Fetch and store Firebase users before creating the serializer instance
-        self.fetch_and_store_firebase_users()
-        
-        # Now, create the serializer instance
-        serializer.save()
 
 class UsersRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Users.objects.all()
