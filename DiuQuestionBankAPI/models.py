@@ -12,24 +12,12 @@ class Departments(models.Model):
     def __str__(self):
         return self.name
 
-class MetaData(models.Model):
-    lastRefreshTime = models.DateTimeField()
-    creationTime = models.DateTimeField()
-    lastSignInTime = models.DateTimeField()
-
-class UserDetails(models.Model):
-    department = models.ForeignKey(Departments, on_delete=models.PROTECT, default=None, related_name='users', null=True, blank=True)
-    about = models.TextField(null=True, blank=True)
-    image = models.ImageField(max_length=None, upload_to='user_images/', null=True, blank=True)
 
 class Users(models.Model):
     uid = models.CharField(max_length=255, primary_key=True)
-    displayName = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(unique=True)
-    emailVerified = models.BooleanField(default=False)
-    disabled = models.BooleanField(default=False)
-    metadata = models.ForeignKey(MetaData, on_delete=models.PROTECT, default=None, related_name='user_log')
-    details = models.ForeignKey(UserDetails, on_delete=models.PROTECT, default=None, related_name='user_details')
+    department = models.ForeignKey(Departments, on_delete=models.PROTECT, default=None, related_name='users', null=True, blank=True)
+    about = models.TextField(null=True, blank=True)
+    image = models.ImageField(max_length=None, upload_to='user_images/', null=True, blank=True)
 
     def __str__(self):
         return self.email

@@ -25,11 +25,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Path to the Firebase Admin SDK JSON file
 FIREBASE_ADMIN_SDK_KEY_PATH = os.path.join(BASE_DIR, 'Firebase/serviceAccountKey.json')
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate(FIREBASE_ADMIN_SDK_KEY_PATH)
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://questionbank-diu-default-rtdb.firebaseio.com'
-})
+try:
+    # Initialize Firebase Admin SDK
+    cred = credentials.Certificate(FIREBASE_ADMIN_SDK_KEY_PATH)
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://questionbank-diu-default-rtdb.firebaseio.com'
+    })
+    print("Connected to Firebase!")
+except Exception as e:
+    print(f"Failed to connect to Firebase. Error: {e}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -46,6 +50,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'utils',
+    'Firebase',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,7 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'DiuQuestionBankAPI',
     'django_filters',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -106,8 +112,6 @@ DATABASES = {
     }
 }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -156,7 +160,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'utils.authentication.FirebaseAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ]
 } 
 
